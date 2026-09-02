@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Quản Lý Thời Khóa Biểu - HUMG</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- STYLE CHO MÀN HÌNH ĐĂNG NHẬP --- */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .login-container {
+            background: #fff;
+            width: 420px;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .login-container h2 {
+            color: #2c3e50;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        .login-container h4 {
+            color: #3498db;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+        }
+        .login-field {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+        .login-field label {
+            display: block;
+            font-size: 12.5px;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .login-field input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ccd1d9;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .login-field input:focus {
+            border-color: #3498db;
+        }
+
+        /* --- STYLE CHO GIAO DIỆN HỆ THỐNG CHÍNH --- */
+        #main-system {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 280px;
+            background-color: #1a252f;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        .sidebar-header {
+            padding: 20px;
+            background-color: #111a24;
+            text-align: center;
+            border-bottom: 1px solid #2c3e50;
+        }
+        .sidebar-header h3 {
+            font-size: 15px;
+            color: #3498db;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 15px 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .menu-category {
+            padding: 10px 20px 5px 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+        .sidebar-menu li a {
+            display: block;
+            padding: 10px 20px;
+            color: #b8c7ce;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-size: 13.5px;
+        }
+        .sidebar-menu li a:hover, .sidebar-menu li.active a {
+            background-color: #2c3e50;
+            color: #fff;
+            border-left: 4px solid #3498db;
+        }
+        .user-section {
+            padding: 15px 20px;
+            background-color: #111a24;
+            border-top: 1px solid #2c3e50;
+        }
+        .user-selector {
+            width: 100%;
+            padding: 6px;
+            background: #2c3e50;
+            color: #fff;
+            border: 1px solid #34495e;
+            border-radius: 4px;
+            font-size: 12.5px;
+            outline: none;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .topbar {
+            background-color: #fff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+        .topbar h2 {
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        .content-body {
+            padding: 25px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .card {
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e6e9ed;
+        }
+        .card-title {
+            font-size: 15px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px solid #f4f6f9;
+            padding-bottom: 8px;
+            font-weight: 600;
+        }
+
+        /* TRỤC THỜI GIAN */
+        .timeline-bar {
+            display: flex;
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 6px;
+            border: 1px solid #e6e9ed;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .timeline-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .week-display {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 280px;
+            text-align: center;
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: 1px solid #e6e9ed;
+        }
+        .timeline-filter {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .timeline-filter select {
+            padding: 8px 12px;
+            border: 1px solid #ccd1d9;
+            border-radius: 4px;
+            font-size: 13.5px;
+            outline: none;
+            background: #fff;
+        }
+
+        /* BUTTONS & TABLES */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            font-size: 12.5px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .form-group select, .form-group input {
+            padding: 8px 12px;
+            border: 1px solid #ccd1d9;
+            border-radius: 4px;
+            font-size: 13.5px;
+            outline: none;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-primary:hover { background-color: #2980b9; }
+        .btn-success { background-color: #2ecc71; color: white; }
+        .btn-danger { background-color: #e74c3c; color: white; }
+        .btn-outline { background-color: #fff; border: 1px solid #ccd1d9; color: #555; }
+        .btn-outline:hover { background-color: #f8f9fa; }
+        
+        .table-responsive { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            background: #fff;
+        }
+        th, td {
+            border: 1px solid #e6e9ed;
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 12.5px;
+        }
+        th {
+            background-color: #f5f7fa;
+            color: #333;
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #fafbfc; }
+        .time-col {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+            width: 150px;
+        }
+        .has-schedule-pdt { background-color: #e8f4fd !important; border-left: 3px solid #3498db; color: #2980b9; text-align: left; font-size: 12px; padding: 8px; }
+        .has-schedule-gv { background-color: #eafaf1 !important; border-left: 3px solid #2ecc71; color: #27ae60; text-align: left; font-size: 12px; padding: 8px; }
+        .has-schedule-sv { background-color: #fef9e7 !important; border-left: 3px solid #f1c40f; color: #d35400; text-align: left; font-size: 12px; padding: 8px; }
+        .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-success { background-color: #d4edda; color: #155724; }
+        .badge-warning { background-color: #fff3cd; color: #856404; }
+        .badge-info { background-color: #d1ecf1; color: #0c5460; }
+        .badge-danger { background-color: #f8d7da; color: #721c24; }
+        .alert { padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 13.5px; display: none; }
+        .alert-success { background-color: #d4edda; color: #155724; border-left: 4px solid #2ecc71; }
+        .alert-warning { background-color: #fff3cd; color: #856404; border-left: 4px solid #f1c40f; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-container">
+            <h2>HỆ THỐNG QUẢN LÝ TKB</h2>
+            <h4>Đại Học Mỏ - Địa Chất</h4>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="login-field">
+                    <label>Mã định danh / Tên đăng nhập *</label>
+                    <input type="text" id="username" placeholder="Nhập pdt, gv, sv hoặc admin..." required>
+                </div>
+                <div class="login-field">
+                    <label>Mật khẩu *</label>
+                    <input type="password" value="123456" placeholder="Nhập mật khẩu..." required>
+                </div>
+                <button type="submit" class="btn-primary" style="padding: 12px; font-size: 14px; width:100%;">🔓 Đăng Nhập Hệ Thống</button>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="main-system">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3>Hệ Thống Quản Lý TKB</h3>
+                <span style="font-size:10px; color:#bdc3c7;">Đại Học Mỏ - Địa Chất</span>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <div class="menu-category role-block block-pdt">Phòng Đào Tạo</div>
+                <li id="menu-scheduling" class="role-block block-pdt"><a href="#" onclick="switchTab('scheduling')">📅 Xếp Lịch & Xử Lý Xung Đột</a></li>
+                <li id="menu-masterdata" class="role-block block-pdt"><a href="#" onclick="switchTab('masterdata')">🗂️ Quản Trị Dữ Liệu Tập Trung</a></li>
+                
+                <div class="menu-category role-block block-gv">Giảng Viên</div>
+                <li id="menu-gv-schedule" class="role-block block-gv"><a href="#" onclick="touchSwitchTab('gv-schedule')">📋 Lịch Giảng Dạy Tuần</a></li>
+                <li id="menu-gv-request" class="role-block block-gv"><a href="#" onclick="switchTab('gv-request')">⚠️ Đăng Ký Nghỉ / Dạy Bù</a></li>
+                
+                <div class="menu-category role-block block-sv">Sinh Viên</div>
+                <li id="menu-sv-view" class="role-block block-sv"><a href="#" onclick="touchSwitchTab('sv-view')">🔍 Thời Khóa Biểu Cá Nhân</a></li>
+                
+                <div class="menu-category role-block block-admin">Hệ Thống (Admin)</div>
+                <li id="menu-admin-users" class="role-block block-admin"><a href="#" onclick="switchTab('admin-users')">👥 Quản Lý Người Dùng</a></li>
+                <li id="menu-admin-logs" class="role-block block-admin"><a href="#" onclick="switchTab('admin-logs')">🛡️ Nhật Ký Hệ Thống</a></li>
+            </ul>
+
+            <div class="user-section">
+                <label style="color: #7f8c8d; font-size: 11px; display:block;">ĐỔI BỘ CHỌN KHUNG GIAO DIỆN:</label>
+                <select class="user-selector" id="role-quick-switcher" onchange="simulateUserRole(this.value)">
+                    <option value="pdt">Chuyên viên Phòng Đào Tạo</option>
+                    <option value="gv">Giảng viên (TS. Hoàng Anh Đức)</option>
+                    <option value="sv">Sinh viên (Phạm Nhật Nam)</option>
+                    <option value="admin">Quản trị viên (Admin)</option>
+                </select>
+                <button class="btn btn-danger" style="width:100%; margin-top:8px; padding:4px; font-size:11.5px;" onclick="handleLogout()">🔒 Đăng Xuất</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="topbar">
+                <h2 id="page-title">Hệ Thống Quản Lý Thời Khóa Biểu</h2>
+                <div style="font-size: 13px; color: #7f8c8d;" id="topbar-context">Vai trò: ...</div>
+            </div>
+
+            <div class="timeline-bar" id="global-timeline">
+                <div class="timeline-nav">
+                    <button class="btn btn-outline" onclick="changeWeek(-1)">⬅️ Tuần trước</button>
+                    <div class="week-display" id="week-label">Tuần 01 (01/06/2026 - 07/06/2026)</div>
+                    <button class="btn btn-outline" onclick="changeWeek(1)">Tuần sau ➡️</button>
+                </div>
+                <div class="timeline-filter">
+                    <select id="select-hk" onchange="resetToWeek1()">
+                        <option value="1">Học kỳ I (Năm học 2026-2027)</option>
+                        <option value="2">Học kỳ II (Năm học 2026-2027)</option>
+                    </select>
+                    <select id="select-week-dropdown" onchange="jumpToWeek(this.value)">
+                        <option value="1">Tuần 1 (Hiện tại)</option>
+                        <option value="2">Tuần 2 (Tuần sau)</option>
+                        <option value="3">Tuần 3 (Tuần sau nữa)</option>
+                        <option value="4">Tuần 4</option>
+                        <option value="5">Tuần 5</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="content-body">
+                <div id="success-alert" class="alert alert-success"></div>
+                <div id="warning-alert" class="alert alert-warning"></div>
+
+                <div id="tab-scheduling" class="tab-section" style="display:none;">
+                    <div class="card">
+                        <div class="card-title">Điều Phối & Sắp Xếp Lịch Học Toàn Trường</div>
+                        <form onsubmit="executeScheduling(event)">
+                            <div class="form-grid">
+                                <div class="form-group"><label>Lớp học phần *</label><select id="input-lop"><option value="ĐH Tin học K23A">ĐH Tin học K23A</option><option value="ĐH Địa chất K24B">ĐH Địa chất K24B</option></select></div>
+                                <div class="form-group"><label>Môn học *</label><select><option>Phân tích thiết kế HTTT (3 TC)</option></select></div>
+                                <div class="form-group"><label>Giảng viên *</label><select id="input-gv"><option value="TS. Hoàng Anh Đức">TS. Hoàng Anh Đức</option></select></div>
+                                <div class="form-group"><label>Phòng học *</label><select id="input-phong"><option value="Phòng 301-PM">Phòng 301 - Tòa PM</option></select></div>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group"><label>Thứ *</label><select id="input-thu"><option value="Thứ Hai">Thứ Hai</option><option value="Thứ Ba">Thứ Ba</option></select></div>
+                                <div class="form-group"><label>Ca Học (Chọn Ca Bắt Đầu) *</label>
+                                    <select id="input-ca">
+                                        <option value="Ca 1 (06h45)">Ca 1 (06h45)</option>
+                                        <option value="Ca 4 (09h45)">Ca 4 (09h45)</option>
+                                        <option value="Ca 7 (12h30)">Ca 7 (12h30)</option>
+                                        <option value="Ca 10 (15h30)">Ca 10 (15h30)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="justify-content: flex-end; grid-column: span 2;"><button type="submit" class="btn btn-primary">⚡ Thực Hiện Xếp Lịch</button></div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <div class="card-title" id="pdt-table-title">Bảng Lưới TKB Toàn Trường (Tuần 1)</div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead><tr><th>Ca Học & Giờ</th><th>Thứ Hai</th><th>Thứ Ba</th><th>Thứ Tư</th><th>Thứ Năm</th><th>Thứ Sáu</th></tr></thead>
+                                <tbody id="pdt-matrix-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-section" id="tab-masterdata" style="display:none;">
+                    <div class="card">
+                        <div class="card-title">Quản Lý Danh Mục Hồ Sơ Gốc (Master Data)</div>
+                        <div class="form-grid">
+                            <button class="btn btn-success" style="padding:15px;">📂 Quản lý Giảng viên</button>
+                            <button class="btn btn-success" style="padding:15px;">🏢 Quản lý Phòng học</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-gv-schedule" class="tab-section" style="display:none;">
+                    <div class="card">
+                        <div class="card-title" id="gv-table-title">Lưới Lịch Giảng Dạy Tuần (TS. Hoàng Anh Đức)</div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead><tr style="background-color: #eafaf1;"><th>Ca Học & Giờ</th><th>Thứ Hai</th><th>Thứ Ba</th><th>Thứ Tư</th><th>Thứ Năm</th><th>Thứ Sáu</th></tr></thead>
+                                <tbody id="gv-matrix-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tab-gv-request" class="tab-section" style="display:none;">
+                    <div class="card"><div class="card-title">Gửi Yêu Cầu Báo Nghỉ / Xin Dạy Bù</div><form onsubmit="submitGVRequest(event)"><div class="form-grid"><div class="form-group"><label>Ca dạy báo đổi *</label><select><option>Thứ Hai - Ca 1 đến Ca 3 - Lớp ĐH Tin học K23A</option></select></div><div class="form-group"><label>Lý do *</label><input type="text" placeholder="Nhập lý do gửi..." required></div><div class="form-group" style="justify-content: flex-end;"><button type="submit" class="btn btn-danger">📤 Gửi Yêu Cầu</button></div></div></form></div>
+                </div>
+
+                <div id="tab-sv-view" class="tab-section" style="display:none;">
+                    <div class="card">
+                        <div class="card-title" id="sv-table-title">Thời Khóa Biểu Tuần (Sinh viên: Phạm Nhật Nam)</div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead><tr style="background-color: #fef9e7;"><th>Ca Học & Giờ</th><th>Thứ Hai</th><th>Thứ Ba</th><th>Thứ Tư</th><th>Thứ Năm</th><th>Thứ Sáu</th></tr></thead>
+                                <tbody id="sv-matrix-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-admin-users" class="tab-section" style="display:none;">
+                    <div class="card"><div class="card-title">Quản Lý Tài Khoản Người Dùng Toàn Trường (Tiến trình 4.0)</div><div class="table-responsive"><table><thead><tr><th>Mã định danh</th><th>Họ và Tên</th><th>Phân nhóm quyền</th><th>Trạng thái</th></tr></thead><tbody><tr><td>2421050168</td><td>Nguyễn Văn A</td><td><span class="badge badge-info">Sinh viên</span></td><td><span class="badge badge-success">Online</span></td></tr><tr><td>GV_03102</td><td>Hoàng Anh Đức</td><td><span class="badge badge-info">Giảng viên</span></td><td><span class="badge badge-success">Online</span></td></tr><tr><td>PDT_HUMG</td><td>Phòng Đào Tạo</td><td><span class="badge badge-warning">Chuyên viên Giáo vụ</span></td><td><span class="badge badge-success">Online</span></td></tr></tbody></table></div></div>
+                </div>
+                
+                <div id="tab-admin-logs" class="tab-section" style="display:none;">
+                    <div class="card">
+                        <div class="card-title">Hệ Thống Nhật Ký Thao Tác & Vào Ra Hệ Thống (User Session Audit Logs)</div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr style="background-color: #f1f3f5;">
+                                        <th>Thời Gian Hệ Thống</th>
+                                        <th>Mã Tài Khoản</th>
+                                        <th>Tên Người Dùng</th>
+                                        <th>Vai Trò Quyền</th>
+                                        <th>Hành Động / Sự Kiện Session</th>
+                                        <th>Trạng Tính Định Tuyến</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>2026-06-02 06:45:12</td><td><code style="font-weight:bold; color: #2980b9;">pdt</code></td><td>Phòng Đào Tạo HUMG</td><td><span class="badge badge-warning">Chuyên viên Giáo vụ</span></td><td>⚡ <b>Đăng nhập hệ thống thành công</b></td><td><span class="badge badge-success">200 OK</span></td></tr>
+                                    <tr><td>2026-06-02 07:15:34</td><td><code style="font-weight:bold; color: #27ae60;">gv</code></td><td>TS. Hoàng Anh Đức</td><td><span class="badge badge-info">Giảng viên</span></td><td>⚡ <b>Đăng nhập hệ thống thành công</b></td><td><span class="badge badge-success">200 OK</span></td></tr>
+                                    <tr><td>2026-06-02 07:30:22</td><td><code style="font-weight:bold; color: #d35400;">sv</code></td><td>Nguyễn Văn A</td><td><span class="badge badge-info">Sinh viên</span></td><td>⚡ <b>Đăng nhập hệ thống thành công</b></td><td><span class="badge badge-success">200 OK</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentWeek = 1;
+
+        const weekLabels = {
+            1: "Tuần 01 (01/06/2026 - 07/06/2026) [Tuần này]",
+            2: "Tuần 02 (08/06/2026 - 14/06/2026) [Tuần sau]",
+            3: "Tuần 03 (15/06/2026 - 21/06/2026) [Tuần sau nữa]",
+            4: "Tuần 04 (22/06/2026 - 28/06/2026)",
+            5: "Tuần 05 (29/06/2026 - 05/07/2026)"
+        };
+
+        const shiftTimes = [
+            "Ca 1 (06h45)", "Ca 2 (07h45)", "Ca 3 (08h45)",
+            "Ca 4 (09h45)", "Ca 5 (10h45)", "Ca 6 (11h30)",
+            "Ca 7 (12h30)", "Ca 8 (13h30)", "Ca 9 (14h30)",
+            "Ca 10 (15h30)", "Ca 11 (16h30)", "Ca 12 (17h30)"
+        ];
+
+        window.onload = function() {
+            buildMatrices(); 
+        };
+
+        // HÀM XỬ LÝ ĐĂNG NHẬP
+        function handleLogin(event) {
+            event.preventDefault();
+            const user = document.getElementById('username').value.trim().toLowerCase();
+            
+            if(['pdt', 'gv', 'sv', 'admin'].includes(user)) {
+                document.getElementById('login-screen').style.display = 'none';
+                simulateUserRole(user);
+            } else {
+                alert('Vui lòng nhập đúng mã demo (pdt, gv, sv, hoặc admin) để vào hệ thống!');
+            }
+        }
+
+        // HÀM XỬ LÝ ĐĂNG XUẤT
+        function handleLogout() {
+            document.getElementById('username').value = '';
+            document.getElementById('login-screen').style.display = 'flex';
+        }
+
+        // PHÂN QUYỀN VÀ PHÂN CHIA MENU THEO VAI TRÒ CHÍNH XÁC
+        function simulateUserRole(role) {
+            // 1. Ẩn TOÀN BỘ các mục Menu trên Sidebar trước
+            const allBlocks = document.querySelectorAll('.role-block');
+            allBlocks.forEach(block => block.style.display = 'none');
+
+            // 2. Chỉ hiển thị các mục Menu thuộc về Vai trò được chọn
+            const activeBlocks = document.querySelectorAll('.block-' + role);
+            activeBlocks.forEach(block => block.style.display = 'block');
+
+            // Đồng bộ bộ chọn nhanh ở góc dưới sidebar
+            document.getElementById('role-quick-switcher').value = role;
+
+            // 3. Thiết lập Tab mặc định và Nội dung tiêu đề tương ứng với từng vai trò
+            if (role === 'pdt') { 
+                document.getElementById('page-title').innerText = "Xếp Lịch & Xử Lý Xung Đột (Phòng Đào Tạo)";
+                document.getElementById('topbar-context').innerText = "Vai trò: Chuyên Viên Đào Tạo"; 
+                document.getElementById('global-timeline').style.display = 'flex';
+                switchTab('scheduling'); 
+            }
+            else if (role === 'gv') { 
+                document.getElementById('page-title').innerText = "Lịch Giảng Dạy Tuần (Giảng Viên)";
+                document.getElementById('topbar-context').innerText = "Vai trò: Giảng Viên (TS. Hoàng Anh Đức)"; 
+                document.getElementById('global-timeline').style.display = 'flex';
+                switchTab('gv-schedule'); 
+            }
+            else if (role === 'sv') { 
+                document.getElementById('page-title').innerText = "Thời Khóa Biểu Cá Nhân (Sinh Viên)";
+                document.getElementById('topbar-context').innerText = "Vai trò: Sinh Viên (Phạm Nhật Nam)"; 
+                document.getElementById('global-timeline').style.display = 'flex';
+                switchTab('sv-view'); 
+            }
+            else if (role === 'admin') { 
+                document.getElementById('page-title').innerText = "Quản Lý Hệ Thống & Nhật Ký Người Dùng";
+                document.getElementById('topbar-context').innerText = "Vai trò: Quản Trị Viên (Admin Hệ Thống)"; 
+                document.getElementById('global-timeline').style.display = 'none'; // Admin ẩn thanh tuần
+                switchTab('admin-users'); 
+            }
+        }
+
+        // ĐIỀU HƯỚNG TABS CON TRONG GIAO DIỆN
+        function switchTab(tabName) {
+            const sections = document.querySelectorAll('.tab-section');
+            sections.forEach(sec => sec.style.display = 'none');
+            
+            const menuItems = document.querySelectorAll('.sidebar-menu li');
+            menuItems.forEach(item => item.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabName).style.display = 'block';
+            if(document.getElementById('menu-' + tabName)){ 
+                document.getElementById('menu-' + tabName).classList.add('active'); 
+            }
+            closeAlerts();
+        }
+
+        function touchSwitchTab(tabName) {
+            document.getElementById('global-timeline').style.display = 'flex';
+            switchTab(tabName);
+        }
+
+        // TRỤC THỜI GIAN VÀ CHUYỂN TUẦN
+        function changeWeek(direction) {
+            let target = currentWeek + direction;
+            if (target >= 1 && target <= 5) {
+                jumpToWeek(target);
+            }
+        }
+
+        function jumpToWeek(weekNum) {
+            currentWeek = parseInt(weekNum);
+            document.getElementById('week-label').innerText = weekLabels[currentWeek];
+            document.getElementById('select-week-dropdown').value = currentWeek;
+
+            document.getElementById('pdt-table-title').innerText = `Bảng Lưới TKB Toàn Trường (Tuần ${currentWeek})`;
+            document.getElementById('gv-table-title').innerText = `Lưới Lịch Giảng Dạy Tuần (TS. Hoàng Anh Đức) - Tuần ${currentWeek}`;
+            document.getElementById('sv-table-title').innerText = `Thời Khóa Biểu Tuần (Sinh viên: Phạm Nhật Nam) - Tuần ${currentWeek}`;
+
+            buildMatrices();
+        }
+
+        function resetToWeek1() { jumpToWeek(1); }
+
+        // SINH DỮ LIỆU MA TRẬN LỊCH HỌC THEO TUẦN (MÔ PHỎNG)
+        function buildMatrices() {
+            const pdtBody = document.getElementById('pdt-matrix-body');
+            const gvBody = document.getElementById('gv-matrix-body');
+            const svBody = document.getElementById('sv-matrix-body');
+            
+            pdtBody.innerHTML = ''; gvBody.innerHTML = ''; svBody.innerHTML = '';
+
+            shiftTimes.forEach((time, index) => {
+                // Lưới Phòng Đào Tạo
+                let pdtRow = `<tr><td class="time-col">${time}</td>`;
+                if (currentWeek === 1) {
+                    if(index === 0) { pdtRow += `<td class="has-schedule-pdt" rowspan="3"><b>Môn:</b> PTTK HTTT<br><b>GV:</b> TS. Đức<br><b>Lớp:</b> TH K23A<br><b>P:</b> 301-PM</td><td>—</td><td>—</td><td>—</td><td>—</td>`; }
+                    else if(index === 3) { pdtRow += `<td class="has-schedule-pdt" rowspan="2"><b>Môn:</b> CSDL<br><b>GV:</b> ThS. B<br><b>Lớp:</b> TH K23A<br><b>P:</b> 301-PM</td><td>—</td><td>—</td><td>—</td>`; }
+                    else if(index === 6) { pdtRow += `<td>—</td><td>—</td><td class="has-schedule-pdt" rowspan="3"><b>Môn:</b> Toán Rời Rạc<br><b>GV:</b> ThS. A<br><b>Lớp:</b> ĐC K24B<br><b>P:</b> 502-PM</td><td>—</td><td>—</td>`; }
+                    else {
+                        let cellsNeeded = 5; if(index === 1 || index === 2 || index === 4 || index === 7 || index === 8) cellsNeeded = 4;
+                        for(let i=0; i<cellsNeeded; i++) { pdtRow += `<td>—</td>`; }
+                    }
+                } else if (currentWeek === 2) {
+                    if(index === 3) { pdtRow += `<td class="has-schedule-pdt" rowspan="3" style="background-color: #f4ecf7 !important; border-left-color: #9b59b6; color: #8e44ad;"><b>Môn:</b> [LỊCH TUẦN 2]<br>Thực tập PTTK HTTT<br><b>P:</b> Lớp Máy 502</td><td>—</td><td>—</td><td>—</td><td>—</td>`; }
+                    else if(index === 6) { pdtRow += `<td>—</td><td>—</td><td class="has-schedule-pdt" rowspan="3"><b>Môn:</b> Toán Rời Rạc<br><b>GV:</b> ThS. A<br><b>Lớp:</b> ĐC K24B<br><b>P:</b> 502-PM</td><td>—</td><td>—</td>`; }
+                    else {
+                        let cellsNeeded = 5; if(index === 4 || index === 5 || index === 7 || index === 8) cellsNeeded = 4;
+                        for(let i=0; i<cellsNeeded; i++) { pdtRow += `<td>—</td>`; }
+                    }
+                } else {
+                    if(index === 0) { pdtRow += `<td>—</td><td>—</td><td>—</td><td class="has-schedule-pdt" rowspan="3" style="background-color: #fcedec !important; border-left-color: #e74c3c; color: #c0392b;">🔥 <b>LỊCH THI ĐỒ AN</b><br>Báo cáo Bài tập lớn<br> Hội trường nhà C</td><td>—</td>`; }
+                    else {
+                        let cellsNeeded = 5; if(index === 1 || index === 2) cellsNeeded = 4;
+                        for(let i=0; i<cellsNeeded; i++) { pdtRow += `<td>—</td>`; }
+                    }
+                }
+                pdtRow += `</tr>`; pdtBody.innerHTML += pdtRow;
+
+                // Lưới Giảng Viên
+                let gvRow = `<tr><td class="time-col">${time}</td>`;
+                if(currentWeek === 1) {
+                    if(index === 0) { gvRow += `<td class="has-schedule-gv" rowspan="3"><b>Môn dạy:</b> PTTK HTTT<br><b>Lớp:</b> ĐH Tin học K23A<br><b>Địa điểm:</b> Phòng 301 - PM</td><td>—</td><td>—</td><td>—</td><td>—</td>`; }
+                    else {
+                        let cellsNeeded = 5; if(index === 1 || index === 2) cellsNeeded = 4;
+                        for(let i=0; i<cellsNeeded; i++) { gvRow += `<td>—</td>`; }
+                    }
+                } else {
+                    let cellsNeeded = 5; for(let i=0; i<cellsNeeded; i++) { gvRow += `<td>—</td>`; }
+                }
+                gvRow += `</tr>`; gvBody.innerHTML += gvRow;
+
+                // Lưới Sinh Viên
+                let svRow = `<tr><td class="time-col">${time}</td>`;
+                if(currentWeek === 1) {
+                    if(index === 0) { svRow += `<td class="has-schedule-sv" rowspan="3"><b>Môn học:</b> Phân tích thiết kế HTTT<br><b>GV:</b> TS. Hoàng Anh Đức<br><b>Địa điểm:</b> Phòng 301-PM</td><td>—</td><td>—</td><td>—</td><td>—</td>`; }
+                    else if(index === 3) { svRow += `<td>—</td><td class="has-schedule-sv" rowspan="2"><b>Môn học:</b> Cơ Sở Dữ Liệu<br><b>GV:</b> ThS. Lê Văn B<br><b>Địa điểm:</b> Phòng 301-PM</td><td>—</td><td>—</td><td>—</td>`; }
+                    else {
+                        let cellsNeeded = 5; if(index === 1 || index === 2 || index === 4) cellsNeeded = 4;
+                        for(let i=0; i<cellsNeeded; i++) { svRow += `<td>—</td>`; }
+                    }
+                } else if(currentWeek === 2) {
+                    if(index === 3) { svRow += `<td class="has-schedule-sv" rowspan="3"><b>Môn học:</b> Thực tập PTTK HTTT<br><b>GV:</b> TS. Đức<br><b>Địa điểm:</b> Phòng Lớp Máy 502</td><td>—</td><td>—</td><td>—</td><td>—</td>`; }
+                    else {
+                        let cellsNeeded = 5; if(index === 4 || index === 5) cellsNeeded = 4;
+                        for(let i=0; i<cellsNeeded; i++) { svRow += `<td>—</td>`; }
+                    }
+                } else {
+                    let cellsNeeded = 5; for(let i=0; i<cellsNeeded; i++) { svRow += `<td>—</td>`; }
+                }
+                svRow += `</tr>`; svBody.innerHTML += svRow;
+            });
+        }
+
+        // XỬ LÝ SUBMIT FORM
+        function executeScheduling(event) {
+            event.preventDefault(); closeAlerts();
+            const thu = document.getElementById('input-thu').value; const ca = document.getElementById('input-ca').value;
+            if (thu === "Thứ Hai" && ca === "Ca 1 (06h45)" && currentWeek === 1) {
+                const warningBox = document.getElementById('warning-alert'); warningBox.style.display = 'block';
+                warningBox.innerHTML = `🚨 <strong>XUNG ĐỘT TUẦN 1:</strong> Khung ca giờ này ở Tuần 1 đã bị trùng lịch!`;
+            } else {
+                const successBox = document.getElementById('success-alert'); successBox.style.display = 'block';
+                successBox.innerHTML = `🎉 <strong>Thành công:</strong> Quét dữ liệu hợp lệ và ghi nhận lịch mới cho Tuần ${currentWeek} vào CSDL!`;
+            }
+            document.querySelector('.content-body').scrollTop = 0;
+        }
+
+        function submitGVRequest(event) {
+            event.preventDefault(); const successBox = document.getElementById('success-alert'); successBox.style.display = 'block';
+            successBox.innerHTML = "📤 <strong>Thành công:</strong> Yêu cầu đã được gửi.";
+            document.querySelector('.content-body').scrollTop = 0;
+        }
+        function closeAlerts() { document.getElementById('success-alert').style.display = 'none'; document.getElementById('warning-alert').style.display = 'none'; }
+    </script>
+</body>
+</html>
